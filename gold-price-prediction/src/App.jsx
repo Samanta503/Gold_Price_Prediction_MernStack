@@ -1,0 +1,184 @@
+import { useState } from 'react'
+import axios from 'axios'
+import './App.css'
+
+function App() {
+  const [year, setYear] = useState(2024)
+  const [month, setMonth] = useState(6)
+  const [day, setDay] = useState(15)
+  const [prediction, setPrediction] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const handlePredict = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await axios.post('http://localhost:5000/api/predict', {
+        year,
+        month,
+        day
+      })
+      
+      setPrediction(response.data)
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to get prediction. Make sure the backend server is running.')
+      setPrediction(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex flex-col items-center justify-center px-4 py-8">
+      {/* Background animated elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-40 h-40 bg-gold-500 rounded-full mix-blend-screen filter blur-3xl opacity-10 animate-pulse-slow"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-gold-600 rounded-full mix-blend-screen filter blur-3xl opacity-5 animate-pulse-slow" style={{animationDelay: '1s'}}></div>
+      </div>
+
+      {/* Main container */}
+      <div className="relative z-10 w-full max-w-2xl">
+        {/* Header */}
+        <div className="text-center mb-12 animate-fade-in">
+          <h1 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-gold-600 mb-4 drop-shadow-lg">
+            Gold Price
+          </h1>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-2">Predictor</h2>
+          <p className="text-gold-300 text-lg font-light">Predict gold prices for any year with advanced AI</p>
+          <div className="w-24 h-1 bg-gradient-to-r from-gold-400 to-gold-600 mx-auto mt-4 rounded-full"></div>
+        </div>
+
+        {/* Input Card */}
+        <div className="bg-gray-900 border border-gold-500/30 rounded-2xl p-8 mb-8 shadow-2xl hover:border-gold-400/50 transition-all duration-300 backdrop-blur-sm bg-opacity-80 animate-glow">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Year Input */}
+            <div className="space-y-3">
+              <label className="block text-gold-300 font-semibold text-sm uppercase tracking-wider">Year</label>
+              <input
+                type="number"
+                value={year}
+                onChange={(e) => setYear(parseInt(e.target.value))}
+                className="w-full px-4 py-3 bg-gray-800 border border-gold-500/30 text-white rounded-lg focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-400/30 transition-all duration-200 text-center font-bold text-lg"
+              />
+              <p className="text-gray-400 text-xs">Any year (limitless)</p>
+            </div>
+
+            {/* Month Input */}
+            <div className="space-y-3">
+              <label className="block text-gold-300 font-semibold text-sm uppercase tracking-wider">Month</label>
+              <select
+                value={month}
+                onChange={(e) => setMonth(parseInt(e.target.value))}
+                className="w-full px-4 py-3 bg-gray-800 border border-gold-500/30 text-white rounded-lg focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-400/30 transition-all duration-200 font-semibold"
+              >
+                {Array.from({length: 12}, (_, i) => (
+                  <option key={i+1} value={i+1} className="bg-gray-800 text-white">
+                    {new Date(2024, i).toLocaleString('default', {month: 'long'})}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Day Input */}
+            <div className="space-y-3">
+              <label className="block text-gold-300 font-semibold text-sm uppercase tracking-wider">Day</label>
+              <input
+                type="number"
+                min="1"
+                max="31"
+                value={day}
+                onChange={(e) => setDay(parseInt(e.target.value))}
+                className="w-full px-4 py-3 bg-gray-800 border border-gold-500/30 text-white rounded-lg focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-400/30 transition-all duration-200 text-center font-bold text-lg"
+              />
+              <p className="text-gray-400 text-xs">1 - 31</p>
+            </div>
+          </div>
+
+          {/* Predict Button */}
+          <button
+            onClick={handlePredict}
+            disabled={loading}
+            className={`w-full py-4 rounded-xl font-bold text-lg uppercase tracking-wider transition-all duration-300 transform ${
+              loading
+                ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-gold-400 to-gold-600 text-black hover:from-gold-300 hover:to-gold-500 hover:shadow-2xl hover:shadow-gold-500/50 hover:scale-105 active:scale-95'
+            }`}
+          >
+            {loading ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                <span>Predicting...</span>
+              </div>
+            ) : (
+              '✨ Predict Price'
+            )}
+          </button>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-900/30 border border-red-500/50 text-red-300 px-6 py-4 rounded-xl mb-8 animate-fade-in backdrop-blur-sm">
+            <p className="font-semibold text-sm">⚠️ {error}</p>
+          </div>
+        )}
+
+        {/* Result Card */}
+        {prediction && (
+          <div className="bg-gradient-to-br from-gold-900/30 to-gray-900 border border-gold-400/50 rounded-2xl p-8 shadow-2xl backdrop-blur-sm animate-fade-in">
+            <div className="text-center space-y-6">
+              <div>
+                <p className="text-gold-300 font-semibold text-sm uppercase tracking-wider mb-2">Predicted Gold Price</p>
+                <p className="text-6xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-300 to-gold-500 drop-shadow-lg">
+                  ${prediction.predicted_price.toFixed(2)}
+                </p>
+              </div>
+
+              <div className="border-t border-gold-500/30 pt-6">
+                <p className="text-gray-400 text-sm mb-4">For the date:</p>
+                <p className="text-2xl text-gold-200 font-semibold">
+                  {new Date(prediction.year, prediction.month - 1, prediction.day).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+                <p className="text-gold-400 text-sm mt-2">{prediction.unit}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-gold-500/20">
+                  <p className="text-gray-400">Currency</p>
+                  <p className="text-gold-300 font-bold">{prediction.currency}</p>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-gold-500/20">
+                  <p className="text-gray-400">Status</p>
+                  <p className="text-green-400 font-bold">✓ Predicted</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Features */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
+          <div className="bg-gray-800/50 backdrop-blur rounded-xl p-4 border border-gold-500/20 hover:border-gold-400/40 transition-all group">
+            <p className="text-gold-300 font-bold mb-1 group-hover:text-gold-200">🤖 AI Powered</p>
+            <p className="text-gray-400 text-sm">XGBoost ML model</p>
+          </div>
+          <div className="bg-gray-800/50 backdrop-blur rounded-xl p-4 border border-gold-500/20 hover:border-gold-400/40 transition-all group">
+            <p className="text-gold-300 font-bold mb-1 group-hover:text-gold-200">📊 Historical Data</p>
+            <p className="text-gray-400 text-sm">From Kaggle dataset</p>
+          </div>
+          <div className="bg-gray-800/50 backdrop-blur rounded-xl p-4 border border-gold-500/20 hover:border-gold-400/40 transition-all group">
+            <p className="text-gold-300 font-bold mb-1 group-hover:text-gold-200">⚡ Real-time</p>
+            <p className="text-gray-400 text-sm">Instant predictions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default App
