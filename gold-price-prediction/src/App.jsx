@@ -6,6 +6,7 @@ function App() {
   const [year, setYear] = useState(2024)
   const [month, setMonth] = useState(6)
   const [day, setDay] = useState(15)
+  const [inflationRate, setInflationRate] = useState(2.5)
   const [prediction, setPrediction] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -18,7 +19,8 @@ function App() {
       const response = await axios.post('http://localhost:5000/api/predict', {
         year,
         month,
-        day
+        day,
+        inflation_rate: inflationRate
       })
       
       setPrediction(response.data)
@@ -52,7 +54,7 @@ function App() {
 
         {/* Input Card */}
         <div className="bg-gray-900 border border-gold-500/30 rounded-2xl p-8 mb-8 shadow-2xl hover:border-gold-400 transition-all duration-700 backdrop-blur-sm bg-opacity-80 animate-scale-up hover:shadow-gold-500/60 hover:bg-opacity-95 hover:bg-gray-800/80">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {/* Year Input */}
             <div className="space-y-3 group">
               <label className="block text-gold-300 font-semibold text-sm uppercase tracking-wider transition-all duration-700 group-hover:text-gold-200">Year</label>
@@ -93,6 +95,21 @@ function App() {
                 className="w-full px-4 py-3 bg-gray-800 border border-gold-500/30 text-white rounded-lg focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-400/60 transition-all duration-500 text-center font-bold text-lg hover:border-gold-400 hover:bg-gray-700 hover:shadow-lg hover:shadow-gold-400/40 focus:shadow-lg focus:shadow-gold-400/50"
               />
               <p className="text-gray-400 text-xs transition-all duration-700 group-hover:text-gold-300">1 - 31</p>
+            </div>
+
+            {/* Inflation Rate Input */}
+            <div className="space-y-3 group">
+              <label className="block text-gold-300 font-semibold text-sm uppercase tracking-wider transition-all duration-700 group-hover:text-gold-200">Inflation %</label>
+              <input
+                type="number"
+                min="-10"
+                max="50"
+                step="0.1"
+                value={inflationRate}
+                onChange={(e) => setInflationRate(parseFloat(e.target.value))}
+                className="w-full px-4 py-3 bg-gray-800 border border-gold-500/30 text-white rounded-lg focus:outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-400/60 transition-all duration-500 text-center font-bold text-lg hover:border-gold-400 hover:bg-gray-700 hover:shadow-lg hover:shadow-gold-400/40 focus:shadow-lg focus:shadow-gold-400/50"
+              />
+              <p className="text-gray-400 text-xs transition-all duration-700 group-hover:text-gold-300">-10% to 50%</p>
             </div>
           </div>
 
@@ -151,6 +168,10 @@ function App() {
                 <div className="bg-gray-800/50 rounded-lg p-3 border border-gold-500/20 transition-all duration-700 hover:border-gold-400 hover:bg-gray-700 hover:shadow-lg hover:shadow-gold-400/50 group cursor-pointer">
                   <p className="text-gray-400 transition-all duration-700 group-hover:text-gold-200">Currency</p>
                   <p className="text-gold-300 font-bold transition-all duration-700 group-hover:text-gold-100 group-hover:text-base">{prediction.currency}</p>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-blue-500/20 transition-all duration-700 hover:border-blue-400 hover:bg-gray-700 hover:shadow-lg hover:shadow-blue-400/50 group cursor-pointer">
+                  <p className="text-gray-400 transition-all duration-700 group-hover:text-blue-200">Inflation Rate</p>
+                  <p className="text-blue-400 font-bold transition-all duration-700 group-hover:text-blue-300 group-hover:text-base">{prediction.inflation_rate.toFixed(2)}%</p>
                 </div>
                 <div className="bg-gray-800/50 rounded-lg p-3 border border-green-500/20 transition-all duration-700 hover:border-green-400 hover:bg-gray-700 hover:shadow-lg hover:shadow-green-400/50 group cursor-pointer">
                   <p className="text-gray-400 transition-all duration-700 group-hover:text-green-200">Status</p>

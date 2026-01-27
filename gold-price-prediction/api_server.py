@@ -57,12 +57,15 @@ def predict():
         year = int(data.get('year'))
         month = int(data.get('month', 6))
         day = int(data.get('day', 15))
+        inflation_rate = float(data.get('inflation_rate', 0.0))  # Default to 0% if not provided
         
         # Validate month and day
         if month < 1 or month > 12:
             return jsonify({'error': 'Month must be between 1 and 12'}), 400
         if day < 1 or day > 31:
             return jsonify({'error': 'Day must be between 1 and 31'}), 400
+        if inflation_rate < -10 or inflation_rate > 50:
+            return jsonify({'error': 'Inflation rate must be between -10% and 50%'}), 400
         
         # Calculate day of week (0=Monday, 6=Sunday)
         from datetime import date
@@ -79,6 +82,8 @@ def predict():
         df_sample['month'] = df_sample['date'].dt.month
         df_sample['day'] = df_sample['date'].dt.day
         df_sample['dayofweek'] = df_sample['date'].dt.dayofweek
+        df_sample['inflation_rate'] = df_sample['CPI'].pct_change() * 100
+        df_sample['inflation_rate'] = df_sample['inflation_rate'].fillna(0)
         
         # Get a sample row and fill in our prediction inputs
         sample_row = df_sample.iloc[0].copy()
@@ -86,10 +91,11 @@ def predict():
         sample_row['month'] = month
         sample_row['day'] = day
         sample_row['dayofweek'] = dayofweek
+        sample_row['inflation_rate'] = inflation_rate
         
         # Keep all other features as their median values from training data
         for col in feature_cols:
-            if col not in ['year', 'month', 'day', 'dayofweek'] and col in df_sample.columns:
+            if col not in ['year', 'month', 'day', 'dayofweek', 'inflation_rate'] and col in df_sample.columns:
                 if col not in sample_row or pd.isna(sample_row[col]):
                     sample_row[col] = df_sample[col].median()
         
@@ -124,6 +130,7 @@ def predict():
             'year': int(year),
             'month': int(month),
             'day': int(day),
+            'inflation_rate': float(inflation_rate),
             'currency': 'USD',
             'unit': 'per troy ounce'
         })

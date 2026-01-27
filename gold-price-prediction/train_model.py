@@ -19,6 +19,13 @@ data["month"] = data["date"].dt.month
 data["day"] = data["date"].dt.day
 data["dayofweek"] = data["date"].dt.dayofweek
 
+# Calculate inflation rate from CPI
+# Inflation rate = ((CPI_current - CPI_previous) / CPI_previous) * 100
+data["inflation_rate"] = data["CPI"].pct_change() * 100
+
+# For the first row where inflation_rate is NaN, use 0 or fill with next valid value
+data["inflation_rate"] = data["inflation_rate"].fillna(0)
+
 # Drop original date (object/datetime not allowed directly by XGBoost)
 data = data.drop(columns=["date"])
 
