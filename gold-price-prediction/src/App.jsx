@@ -10,11 +10,31 @@ function App() {
   const [prediction, setPrediction] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(false)
+
+  const validateInputs = () => {
+    if (year < 1900) {
+      setError('Year must be after 1900')
+      return false
+    }
+    if (month < 1 || month > 12) {
+      setError('Month must be between 1 and 12')
+      return false
+    }
+    if (day < 1 || day > 31) {
+      setError('Day must be between 1 and 31')
+      return false
+    }
+    return true
+  }
 
   const handlePredict = async () => {
+    if (!validateInputs()) return
+
     try {
       setLoading(true)
       setError(null)
+      setSuccess(false)
       
       const response = await axios.post('http://localhost:5000/api/predict', {
         year,
@@ -24,12 +44,21 @@ function App() {
       })
       
       setPrediction(response.data)
+      setSuccess(true)
+      setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to get prediction. Make sure the backend server is running.')
       setPrediction(null)
     } finally {
       setLoading(false)
     }
+  }
+
+  const setPresetDate = (presetYear) => {
+    const today = new Date()
+    setYear(presetYear)
+    setMonth(today.getMonth() + 1)
+    setDay(today.getDate())
   }
 
   return (
@@ -54,6 +83,27 @@ function App() {
 
         {/* Input Card */}
         <div className="bg-gray-900 border border-gold-500/30 rounded-2xl p-8 mb-8 shadow-2xl hover:border-gold-400 transition-all duration-700 backdrop-blur-sm bg-opacity-80 animate-scale-up hover:shadow-gold-500/60 hover:bg-opacity-95 hover:bg-gray-800/80">
+          {/* Quick Preset Buttons */}
+          <div className="mb-6 flex gap-2 flex-wrap">
+            <button
+              onClick={() => setPresetDate(2025)}
+              className="text-xs px-3 py-2 bg-gold-500/20 text-gold-300 rounded-lg hover:bg-gold-500/40 transition-all duration-300 border border-gold-400/30 hover:border-gold-400 font-semibold"
+            >
+              2025
+            </button>
+            <button
+              onClick={() => setPresetDate(2024)}
+              className="text-xs px-3 py-2 bg-gold-500/20 text-gold-300 rounded-lg hover:bg-gold-500/40 transition-all duration-300 border border-gold-400/30 hover:border-gold-400 font-semibold"
+            >
+              2024
+            </button>
+            <button
+              onClick={() => setPresetDate(2023)}
+              className="text-xs px-3 py-2 bg-gold-500/20 text-gold-300 rounded-lg hover:bg-gold-500/40 transition-all duration-300 border border-gold-400/30 hover:border-gold-400 font-semibold"
+            >
+              2023
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {/* Year Input */}
             <div className="space-y-3 group">
@@ -124,8 +174,8 @@ function App() {
             }`}
           >
             {loading ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+              <div className="flex items-center justify-center space-x-3">
+                <div className="w-5 h-5 border-2 border-gray-400 border-t-gold-400 rounded-full animate-spin"></div>
                 <span>Predicting...</span>
               </div>
             ) : (
@@ -138,6 +188,13 @@ function App() {
         {error && (
           <div className="bg-red-900/30 border border-red-500/50 text-red-300 px-6 py-4 rounded-xl mb-8 animate-slide-in-left backdrop-blur-sm transition-all duration-700 hover:border-red-400 hover:bg-red-900/60 hover:shadow-lg hover:shadow-red-500/50">
             <p className="font-semibold text-sm hover:text-red-100 transition-all duration-700">⚠️ {error}</p>
+          </div>
+        )}
+
+        {/* Success Notification */}
+        {success && (
+          <div className="bg-green-900/30 border border-green-500/50 text-green-300 px-6 py-4 rounded-xl mb-8 animate-slide-in-left backdrop-blur-sm transition-all duration-700">
+            <p className="font-semibold text-sm">✅ Prediction successful!</p>
           </div>
         )}
 
