@@ -239,6 +239,7 @@ function App() {
           </div>
         )}
 
+
         {/* Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
           <div className="bg-gray-800/50 backdrop-blur rounded-xl p-4 border border-gold-500/20 hover:border-gold-400 transition-all duration-700 group hover:bg-gray-700/80 hover:shadow-xl hover:shadow-gold-500/60 transform hover:-translate-y-2 cursor-pointer">
